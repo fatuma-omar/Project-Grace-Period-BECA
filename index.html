@@ -1,56 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Fatuma Omar | Projects</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Effect of grace period on false alarm rates of smartwatch-based OHCA detection systems: a pilot study</title>
+
+  <!-- Highlight.js with Atom One Light theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/r.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+  <script>hljs.highlightAll();</script>
+
+  <!-- MathJax for LaTeX rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-      text-align: center;
-      padding: 40px;
+      background: #ffffff;
+      color: #333333;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      padding: 2rem;
     }
-    h1 {
-      margin-bottom: 30px;
-    }
-    .tiles {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .tile {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 200px;
-      height: 120px;
-      background: #f0f0f0;
-      border-radius: 12px;
+    a {
+      color: #007acc;
       text-decoration: none;
-      color: #333;
-      font-size: 18px;
-      font-weight: bold;
-      transition: 0.3s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    .tile:hover {
-      background: #e0e0e0;
-      transform: translateY(-5px);
+    a:hover {
+      text-decoration: underline;
+    }
+    .content {
+      max-width: 800px;
+      margin: auto;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.95rem;
+    }
+    h1, h2 {
+      color: #1e1e2f;
+    }
+    code {
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     }
   </style>
 </head>
 <body>
-  <h1>Welcome to My Homepage</h1>
-  <p>Click a tile to view a project 👇</p>
+  <div class="content">
+    <a href="https://fatuma-omar.github.io/">&larr; Back to projects</a>
+<h3>Shared frailty model with loglogistic baseline hazard model</h3>
 
-  <div class="tiles">
-    <a href="https://fatuma-omar.github.io/my-calculator/" class="tile">
-      Calculator App
-    </a>
-    <a href="https://fatuma-omar.github.io/weather-app/" class="tile">
-      Weather App
-    </a>
+<h3>Stan code</h3>
+
+<pre><code class="language-cpp">functions{
+  real loglogistic_proportional_hazard(real t, real linear_predictor, real log_lambda, real log_k){
+    real lambda = exp(log_lambda);
+    real k = exp(log_k);
+    return exp(linear_predictor)*k*lambda*pow(lambda*t, k - 1) / (1 + pow(lambda*t, k));
+  }
+
+  real loglogistic_proportional_cumulative_hazard(real t, real linear_predictor, real log_lambda, real log_k){
+    real lambda = exp(log_lambda);
+    real k = exp(log_k);
+    return exp(linear_predictor)*log1p(pow(lambda*t, k));
+  }
+}
+
+data{
+  int&lt;lower = 1&gt; N;
+  int&lt;lower = 1&gt; N_subjects;
+  int&lt;lower = 1&gt; subject[N];
+  int&lt;lower = 0, upper = 1&gt; event[N];
+  vector[N] y;
+  int&lt;lower = 1&gt; K;
+  matrix[N, K] X;
+  int&lt;lower = 1&gt; N_times;
+  vector[N_times] times;
+  int&lt;lower = 0, upper = 1&gt; status_brier[N, N_times];
+}
+
+parameters{
+  vector[K] beta;
+  real log_lambda;
+  real log_k;
+  real log_alpha;
+  vector&lt;lower = 0&gt;[N_subjects] Z;
+}
+
+model{
+  beta ~ normal(0, 1);
+  log_lambda ~ normal(0, 1);
+  log_k ~ normal(0, 1);
+  log_alpha ~ normal(0, 1);
+  Z ~ gamma(exp(log_alpha), exp(log_alpha));
+
+  for (n in 1:N){
+    real linear_predictor = dot_product(X[n], beta);
+    real hazard = loglogistic_proportional_hazard(y[n], linear_predictor, log_lambda, log_k)*Z[subject[n]];
+    real cumulative_hazard = loglogistic_proportional_cumulative_hazard(y[n], linear_predictor, log_lambda, log_k)*Z[subject[n]];
+    target += event[n]*log(hazard) - cumulative_hazard;
+  }
+}
+</code></pre>
+
+<h3>R code</h3>
+
+
+    <p>View the full code on <a href="https://github.com/fatuma-omar/Project-Grace-Period-BECA/" target="_blank">GitHub</a>.</p>
   </div>
 </body>
 </html>
